@@ -293,7 +293,7 @@ pip install mcp[cli]
 1. Add the Plugin Repository as a Submodule in your project's repository.
 
    ```cmd
-   git submodule add https://github.com/prajwalshettydev/UnrealGenAISupport Plugins/GenerativeAISupport
+   git submodule add https://github.com/QAWe-ikun/UnrealGenAISupport Plugins/GenerativeAISupport
    ```
 
 2. Regenerate Project Files:
