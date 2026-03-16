@@ -74,8 +74,122 @@ def handle_spawn(command: Dict[str, Any]) -> Dict[str, Any]:
         unreal.log_error(f"Error spawning actor: {str(e)}")
         return {"success": False, "error": str(e)}
 
+def focus_on_actor(actor: unreal.Actor) -> dict:
+    """
+    将视图聚焦到指定的Actor
+
+    Args:
+        actor: unreal.Actor 对象
+
+    Returns:
+        dict: 是否成功，以及其详细信息
+    """
+    try:
+
+        if not actor:
+            return {"success": False, "error": "❌ Actor不存在"}
+
+        # 选中Actor
+        editor_actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+        editor_actor_subsystem.set_selected_level_actors([actor]) # type: ignore
+
+        # 使用CAMERA ALIGN命令聚焦
+        unreal.SystemLibrary.execute_console_command(None, "CAMERA ALIGN ACTIVEVIEWPORTONLY") # type: ignore
+
+        # 获取Actor信息
+        actor_location = actor.get_actor_location()
+
+        return {
+            "success": True, 
+            "detail": f"✅ 已聚焦到: {actor.get_name()}",
+            "location": f"位置: X={actor_location.x:.2f}, Y={actor_location.y:.2f}, Z={actor_location.z:.2f}"
+            }
+
+    except Exception as e:
+        return {"success": False, "error": f"❌ 聚焦失败: {str(e)}"}
 
 
+def focus_on_actor_by_name(actor_name: str | None) -> dict:
+    """
+    通过名称聚焦到Actor
+    """
+    try:
+        # 使用新的API获取所有Actor
+        editor_actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+        all_actors = editor_actor_subsystem.get_all_level_actors() # type: ignore
+
+        # 查找匹配的Actor
+        target_actor = None
+        for actor in all_actors:
+            if actor.get_name() == actor_name:
+                target_actor = actor
+                break
+
+        if not target_actor:
+            return {"success": False, "error": "❌ Actor不存在"}
+
+        return focus_on_actor(target_actor)
+
+    except Exception as e:
+        return {"success": False, "error": f"❌ 聚焦失败: {str(e)}"}
+
+def handle_actor_screenshot(command: Dict[str, Any]):
+        """
+        拍摄某一指定实例的截图
+
+        Args:
+            actor_name (str): 指定要拍摄的实例名
+            resolution_multiplier (int): 分辨率倍数(可选)
+
+        Returns:
+            dict: 包含成功状态和截图路径的字典
+        """
+        try:
+            # 1. 确定暂存的图片位置
+            temp_dir = tempfile.gettempdir()
+            filename = f"unreal_mcp_screenshot_{int(time.time())}.png"
+            screenshot_path = os.path.join(temp_dir, filename).replace('\\', '/')
+
+            # 2. 聚焦到所选对象上
+            actor_name = command.get("actor_name", None)
+            result = focus_on_actor_by_name(actor_name)
+            if result.get("success") == False:
+                return result
+            time.sleep(1) # 防止人眼自适应导致的画面不一致
+
+            # 3. 截图
+            resolution_multiplier = command.get("resolution_multiplier", 1)
+
+            # 使用控制台命令截图
+            console_command = f"HighResShot {resolution_multiplier} filename={screenshot_path}"
+            unreal.SystemLibrary.execute_console_command(unreal.EditorLevelLibrary.get_editor_world(), console_command)
+
+            max_wait_seconds = 5
+            wait_interval = 0.2
+            time_waited = 0
+            file_created = False
+            while time_waited < max_wait_seconds:
+                if os.path.exists(screenshot_path):
+                    file_created = True
+                    break
+                time.sleep(wait_interval)
+                time_waited += wait_interval
+
+            if not file_created:
+               return {"success": False, "error": f"Command was executed, but the output file was not found at the specified path: {screenshot_path}"}
+
+
+            return {
+                "success": True,
+                "path": screenshot_path,
+                "filename": filename
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"❌ 截图失败: {str(e)}"
+            }
 
 def handle_take_screenshot(command):
     """

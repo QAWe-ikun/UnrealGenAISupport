@@ -1088,7 +1088,7 @@ def edit_widget_property(user_widget_path: str, widget_name: str, property_name:
 def add_input_binding(action_name: str, key: str) -> str:
     """
     Add an input action binding to Project Settings.
-    
+
     Args:
         action_name: Name of the action (e.g., "Flap")
         key: Key to bind (e.g., "Space Bar")
@@ -1096,6 +1096,33 @@ def add_input_binding(action_name: str, key: str) -> str:
     command = {"type": "add_input_binding", "action_name": action_name, "key": key}
     response = send_to_unreal(command)
     return response.get("message", f"Failed: {response.get('error')}")
+
+
+@mcp.tool()
+def take_actor_screenshot(selected_name: str | None = None, resolution_multiplier: int = 1) -> str:
+    """
+    Take a screenshot of a specific actor/instance in the Unreal Engine viewport.
+
+    Args:
+        selected_name: Name of the specific actor to screenshot (optional, if None screenshots the whole viewport)
+        resolution_multiplier: Resolution multiplier for the screenshot (default: 1)
+
+    Returns:
+        A message indicating success or failure, including the path to the saved screenshot
+    """
+    command = {
+        "type": "actor_screenshot",
+        "selected_name": selected_name,
+        "resolution_multiplier": resolution_multiplier
+    }
+
+    response = send_to_unreal(command)
+    if response.get("success"):
+        path = response.get("path", "unknown")
+        filename = response.get("filename", "unknown")
+        return f"Screenshot taken successfully. Path: {path}, Filename: {filename}"
+    else:
+        return f"Failed to take screenshot: {response.get('error', 'Unknown error')}"
 
 
 if __name__ == "__main__":

@@ -29,6 +29,7 @@ class CommandDispatcher:
             "create_material": basic_commands.handle_create_material,
             "modify_object": actor_commands.handle_modify_object,
             "take_screenshot": basic_commands.handle_take_screenshot,
+            "actor_screenshot": basic_commands.handle_actor_screenshot,
 
             # Blueprint commands
             "create_blueprint": blueprint_commands.handle_create_blueprint,
