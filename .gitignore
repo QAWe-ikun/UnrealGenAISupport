@@ -4,6 +4,9 @@
 # VS Code file
 .vscode/
 
+# Python cached
+*.pyc
+
 # Compiled Object files
 *.slo
 *.lo
