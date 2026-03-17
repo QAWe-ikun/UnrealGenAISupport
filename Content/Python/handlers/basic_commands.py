@@ -289,8 +289,8 @@ def handle_create_material(command: Dict[str, Any]) -> Dict[str, Any]:
 
 def handle_get_all_scene_objects(command: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        level = unreal.EditorLevelLibrary.get_level(unreal.EditorLevelLibrary.get_editor_world())
-        actors = unreal.GameplayStatics.get_all_actors_of_class(level, unreal.Actor)
+        world = unreal.EditorLevelLibrary.get_editor_world()
+        actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor)
         result = [
             {"name": actor.get_name(), "class": actor.get_class().get_name(), "location": [actor.get_actor_location().x, actor.get_actor_location().y, actor.get_actor_location().z]}
             for actor in actors
@@ -322,8 +322,8 @@ def handle_add_input_binding(command: Dict[str, Any]) -> Dict[str, Any]:
         key = command.get("key")
         # Correctly access the InputSettings singleton
         input_settings = unreal.InputSettings.get_input_settings()
-        # Create the input action mapping
-        action_mapping = unreal.InputActionKeyMapping(action_name=action_name, key=unreal.InputCoreTypes.get_key(key))
+        # Create the input action mapping - use unreal.Key directly
+        action_mapping = unreal.InputActionKeyMapping(action_name=action_name, key=unreal.Key(key))
         # Add the mapping to the input settings
         input_settings.add_action_mapping(action_mapping)
         # Save the changes to the config file
