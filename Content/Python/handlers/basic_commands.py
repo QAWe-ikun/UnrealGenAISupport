@@ -85,10 +85,6 @@ def focus_on_actor(actor: unreal.Actor) -> dict:
         dict: 是否成功，以及其详细信息
     """
     try:
-
-        if not actor:
-            return {"success": False, "error": "❌ Actor不存在"}
-
         # 选中Actor
         editor_actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
         editor_actor_subsystem.set_selected_level_actors([actor]) # type: ignore
@@ -153,8 +149,8 @@ def handle_actor_screenshot(command: Dict[str, Any]):
             screenshot_path = os.path.join(temp_dir, filename).replace('\\', '/')
 
             # 2. 聚焦到所选对象上
-            actor_name = command.get("actor_name", None)
-            result = focus_on_actor_by_label(actor_name)
+            actor_label = command.get("actor_label", None)
+            result = focus_on_actor_by_label(actor_label)
             if result.get("success") == False:
                 return result
             time.sleep(1) # 防止人眼自适应导致的画面不一致
@@ -299,8 +295,7 @@ def handle_get_all_scene_objects(command: Dict[str, Any]) -> Dict[str, Any]:
             world = unreal.EditorLevelLibrary.get_editor_world()
         
         # Get the Actor class properly for the function call
-        actor_class = unreal.Actor.__class__ if hasattr(unreal.Actor, '__class__') else unreal.Actor
-        actors = unreal.GameplayStatics.get_all_actors_of_class(world, actor_class)
+        actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor) # type: ignore
         result = [
             {"name": actor.get_name(), "class": actor.get_class().get_name(), "location": [actor.get_actor_location().x, actor.get_actor_location().y, actor.get_actor_location().z]}
             for actor in actors

@@ -1099,12 +1099,12 @@ def add_input_binding(action_name: str, key: str) -> str:
 
 
 @mcp.tool()
-def take_actor_screenshot(selected_name: str | None = None, resolution_multiplier: int = 1) -> str:
+def take_actor_screenshot(selected_label: str, resolution_multiplier: int = 1) -> str:
     """
     Take a screenshot of a specific actor/instance in the Unreal Engine viewport.
 
     Args:
-        selected_name: Name of the specific actor to screenshot (optional, if None screenshots the whole viewport)
+        selected_label: Label of the specific actor to screenshot
         resolution_multiplier: Resolution multiplier for the screenshot (default: 1)
 
     Returns:
@@ -1112,7 +1112,7 @@ def take_actor_screenshot(selected_name: str | None = None, resolution_multiplie
     """
     command = {
         "type": "actor_screenshot",
-        "selected_name": selected_name,
+        "selected_label": selected_label,
         "resolution_multiplier": resolution_multiplier
     }
 
