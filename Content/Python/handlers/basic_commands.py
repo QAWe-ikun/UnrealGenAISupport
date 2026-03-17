@@ -109,7 +109,7 @@ def focus_on_actor(actor: unreal.Actor) -> dict:
         return {"success": False, "error": f"❌ 聚焦失败: {str(e)}"}
 
 
-def focus_on_actor_by_name(actor_name: str | None) -> dict:
+def focus_on_actor_by_label(actor_label: str | None) -> dict:
     """
     通过名称聚焦到Actor
     """
@@ -123,7 +123,7 @@ def focus_on_actor_by_name(actor_name: str | None) -> dict:
         # 查找匹配的Actor
         target_actor = None
         for actor in all_actors:
-            if actor.get_name() == actor_name:
+            if actor.get_actor_label() == actor_label:
                 target_actor = actor
                 break
 
@@ -140,7 +140,7 @@ def handle_actor_screenshot(command: Dict[str, Any]):
         拍摄某一指定实例的截图
 
         Args:
-            actor_name (str): 指定要拍摄的实例名
+            actor_name (str): 指定要拍摄的实例项目标签
             resolution_multiplier (int): 分辨率倍数(可选)
 
         Returns:
@@ -154,7 +154,7 @@ def handle_actor_screenshot(command: Dict[str, Any]):
 
             # 2. 聚焦到所选对象上
             actor_name = command.get("actor_name", None)
-            result = focus_on_actor_by_name(actor_name)
+            result = focus_on_actor_by_label(actor_name)
             if result.get("success") == False:
                 return result
             time.sleep(1) # 防止人眼自适应导致的画面不一致
