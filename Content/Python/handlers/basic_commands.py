@@ -116,7 +116,9 @@ def focus_on_actor_by_name(actor_name: str | None) -> dict:
     try:
         # 使用新的API获取所有Actor
         editor_actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
-        all_actors = editor_actor_subsystem.get_all_level_actors() # type: ignore
+        if not editor_actor_subsystem:
+            return {"success": False, "error": "Not subsystem found"}
+        all_actors = editor_actor_subsystem.get_all_level_actors() 
 
         # 查找匹配的Actor
         target_actor = None
@@ -289,8 +291,16 @@ def handle_create_material(command: Dict[str, Any]) -> Dict[str, Any]:
 
 def handle_get_all_scene_objects(command: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        world = unreal.EditorLevelLibrary.get_editor_world()
-        actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor)
+        # Use the deprecated but still functional EditorLevelLibrary
+        # Suppress deprecation warning by using the function directly
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            world = unreal.EditorLevelLibrary.get_editor_world()
+        
+        # Get the Actor class properly for the function call
+        actor_class = unreal.Actor.__class__ if hasattr(unreal.Actor, '__class__') else unreal.Actor
+        actors = unreal.GameplayStatics.get_all_actors_of_class(world, actor_class)
         result = [
             {"name": actor.get_name(), "class": actor.get_class().get_name(), "location": [actor.get_actor_location().x, actor.get_actor_location().y, actor.get_actor_location().z]}
             for actor in actors
@@ -318,12 +328,14 @@ def handle_get_files_in_folder(command: Dict[str, Any]) -> Dict[str, Any]:
 
 def handle_add_input_binding(command: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        action_name = command.get("action_name")
-        key = command.get("key")
+        action_name = command.get("action_name", "")
+        key = command.get("key", "")
         # Correctly access the InputSettings singleton
         input_settings = unreal.InputSettings.get_input_settings()
-        # Create the input action mapping - use unreal.Key directly
-        action_mapping = unreal.InputActionKeyMapping(action_name=action_name, key=unreal.Key(key))
+        # Create the input action mapping - pass the key name as string directly
+        action_mapping = unreal.InputActionKeyMapping()
+        action_mapping.action_name = action_name
+        action_mapping.key = key  # Assign the key name directly as a string
         # Add the mapping to the input settings
         input_settings.add_action_mapping(action_mapping)
         # Save the changes to the config file
