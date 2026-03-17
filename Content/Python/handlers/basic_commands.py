@@ -105,7 +105,7 @@ def focus_on_actor(actor: unreal.Actor) -> dict:
         return {"success": False, "error": f"❌ 聚焦失败: {str(e)}"}
 
 
-def focus_on_actor_by_label(actor_label: str | None) -> dict:
+def focus_on_actor_by_label(actor_label: str) -> dict:
     """
     通过名称聚焦到Actor
     """
@@ -136,7 +136,7 @@ def handle_actor_screenshot(command: Dict[str, Any]):
         拍摄某一指定实例的截图
 
         Args:
-            actor_name (str): 指定要拍摄的实例项目标签
+            selected_label (str): 指定要拍摄的实例项目标签
             resolution_multiplier (int): 分辨率倍数(可选)
 
         Returns:
@@ -149,7 +149,9 @@ def handle_actor_screenshot(command: Dict[str, Any]):
             screenshot_path = os.path.join(temp_dir, filename).replace('\\', '/')
 
             # 2. 聚焦到所选对象上
-            actor_label = command.get("actor_label", None)
+            actor_label = command.get("selected_label", None)
+            if actor_label is None:
+                return {"success": False, "error": "can't get selected_label"}
             result = focus_on_actor_by_label(actor_label)
             if result.get("success") == False:
                 return result
